@@ -1,6 +1,6 @@
 # PulseGrid
 
-[![CI](https://github.com/zezotony605-wq/pulsegrid/actions/workflows/ci.yml/badge.svg)](https://github.com/zezotony605-wq/pulsegrid/actions/workflows/ci.yml)
+[![CI](https://github.com/zezotony605-wq/PulseGrid-Full-Stack/actions/workflows/ci.yml/badge.svg)](https://github.com/zezotony605-wq/PulseGrid-Full-Stack/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.1-7F52FF?logo=kotlin&logoColor=white)](backend)
 [![Go](https://img.shields.io/badge/Go-1.24-00ADD8?logo=go&logoColor=white)](alerting)

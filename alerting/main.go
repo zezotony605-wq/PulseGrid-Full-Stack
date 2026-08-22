@@ -20,8 +20,8 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/zezotony605-wq/pulsegrid/alerting/internal/gateway"
-	"github.com/zezotony605-wq/pulsegrid/alerting/internal/rules"
+	"github.com/zezotony605-wq/PulseGrid-Full-Stack/alerting/internal/gateway"
+	"github.com/zezotony605-wq/PulseGrid-Full-Stack/alerting/internal/rules"
 )
 
 const (

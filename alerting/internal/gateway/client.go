@@ -10,7 +10,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/zezotony605-wq/pulsegrid/alerting/internal/rules"
+	"github.com/zezotony605-wq/PulseGrid-Full-Stack/alerting/internal/rules"
 )
 
 // Client reads the gateway's public telemetry endpoints.

@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/zezotony605-wq/pulsegrid/alerting/internal/rules"
+	"github.com/zezotony605-wq/PulseGrid-Full-Stack/alerting/internal/rules"
 )
 
 func criticalSample(id string) rules.Sample {
