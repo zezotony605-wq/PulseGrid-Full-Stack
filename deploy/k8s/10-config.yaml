@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pulsegrid-config
+  namespace: pulsegrid
+data:
+  KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+  KAFKA_TELEMETRY_TOPIC: pulsegrid.telemetry.v1
+  KAFKA_CONSUMER_GROUP: pulsegrid-storage-v1
+  KAFKA_CONSUMER_CONCURRENCY: "3"
+  CLICKHOUSE_URL: http://clickhouse:8123
+  CLICKHOUSE_DATABASE: pulsegrid
+  POSTGRES_R2DBC_URL: r2dbc:postgresql://postgres:5432/pulsegrid
+  JWT_ISSUER: pulsegrid
+  DASHBOARD_ORIGINS: https://pulsegrid.example.com
+---
+# Template only. Real values come from the cluster's secret manager — do not
+# commit populated secrets.
+apiVersion: v1
+kind: Secret
+metadata:
+  name: pulsegrid-secrets
+  namespace: pulsegrid
+type: Opaque
+stringData:
+  JWT_SECRET: replace-with-at-least-32-random-bytes
+  DEVICE_SHARED_SECRET: replace-with-a-unique-device-provisioning-secret
+  POSTGRES_USER: pulsegrid
+  POSTGRES_PASSWORD: replace-me
+  CLICKHOUSE_USER: default
+  CLICKHOUSE_PASSWORD: replace-me

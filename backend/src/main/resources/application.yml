@@ -41,6 +41,8 @@ pulsegrid:
     jwt-secret: ${JWT_SECRET:change-this-development-secret-to-at-least-32-bytes}
     device-secret: ${DEVICE_SHARED_SECRET:dev-only-change-me}
     issuer: ${JWT_ISSUER:pulsegrid}
+    # Browser origins allowed to read the dashboard endpoints. Comma separated.
+    allowed-origins: ${DASHBOARD_ORIGINS:http://localhost:3000}
   clickhouse:
     url: ${CLICKHOUSE_URL:http://localhost:8123}
     database: ${CLICKHOUSE_DATABASE:pulsegrid}

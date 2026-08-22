@@ -1,0 +1,15 @@
+node_modules
+.next
+.git
+.github
+.claude
+.sites-runtime
+backend
+simulator
+alerting
+observability
+load-tests
+docs
+deploy
+coverage
+*.md

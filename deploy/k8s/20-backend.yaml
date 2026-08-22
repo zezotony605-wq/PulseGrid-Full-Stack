@@ -1,0 +1,119 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pulsegrid-backend
+  namespace: pulsegrid
+  labels:
+    app.kubernetes.io/name: pulsegrid-backend
+    app.kubernetes.io/part-of: pulsegrid
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: pulsegrid-backend
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: pulsegrid-backend
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: /actuator/prometheus
+        prometheus.io/port: "8080"
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+      # The root filesystem is read-only, but the JVM still needs a writable
+      # /tmp for its hsperfdata and temp files.
+      volumes:
+        - name: tmp
+          emptyDir: {}
+      containers:
+        - name: backend
+          image: ghcr.io/zezotony605-wq/pulsegrid-backend:latest
+          ports:
+            - name: http
+              containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: pulsegrid-config
+            - secretRef:
+                name: pulsegrid-secrets
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+          resources:
+            requests:
+              cpu: 500m
+              memory: 768Mi
+            limits:
+              memory: 1536Mi
+          # The gateway holds a Kafka producer and two storage clients, so it
+          # needs a generous start-up budget before liveness begins probing.
+          startupProbe:
+            httpGet:
+              path: /actuator/health
+              port: http
+            failureThreshold: 30
+            periodSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: http
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: http
+            periodSeconds: 20
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pulsegrid-backend
+  namespace: pulsegrid
+spec:
+  selector:
+    app.kubernetes.io/name: pulsegrid-backend
+  ports:
+    - name: http
+      port: 8080
+      targetPort: http
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: pulsegrid-backend
+  namespace: pulsegrid
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: pulsegrid-backend
+  minReplicas: 3
+  maxReplicas: 12
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+---
+# Ingestion must survive a node drain: Kafka absorbs bursts, but a gateway
+# with no replicas drops device traffic outright.
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: pulsegrid-backend
+  namespace: pulsegrid
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: pulsegrid-backend

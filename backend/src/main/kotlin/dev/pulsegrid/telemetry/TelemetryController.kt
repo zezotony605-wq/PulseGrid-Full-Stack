@@ -16,7 +16,13 @@ class TelemetryController(private val service: TelemetryService) {
     @ResponseStatus(HttpStatus.ACCEPTED)
     @PreAuthorize("hasAuthority('SCOPE_telemetry:write')")
     suspend fun ingestBatch(@RequestBody events: List<TelemetryEvent>): IngestionResult {
-        require(events.size in 1..5_000) { "Batch must contain 1..5000 events" }
+        // ApiExceptionHandler maps this to a 400. Before it existed the caller
+        // saw a 500 and retried a batch that would never be accepted.
+        require(events.size in 1..MAX_BATCH_SIZE) { "Batch must contain 1..$MAX_BATCH_SIZE events" }
         return service.ingest(events)
+    }
+
+    private companion object {
+        const val MAX_BATCH_SIZE = 5_000
     }
 }

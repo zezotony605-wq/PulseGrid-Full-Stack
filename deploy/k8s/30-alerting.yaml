@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pulsegrid-alerting
+  namespace: pulsegrid
+  labels:
+    app.kubernetes.io/name: pulsegrid-alerting
+    app.kubernetes.io/part-of: pulsegrid
+spec:
+  # The evaluator keeps its dedupe window in memory, so a second replica would
+  # double-count every alert. Scale it by sharding devices, not by replicas.
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: pulsegrid-alerting
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: pulsegrid-alerting
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8090"
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+      containers:
+        - name: alerting
+          image: ghcr.io/zezotony605-wq/pulsegrid-alerting:latest
+          ports:
+            - name: http
+              containerPort: 8090
+          env:
+            - name: GATEWAY_URL
+              value: http://pulsegrid-backend:8080
+            - name: ALERT_LISTEN_ADDR
+              value: ":8090"
+            - name: ALERT_POLL_INTERVAL
+              value: 5s
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              memory: 128Mi
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            periodSeconds: 10
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pulsegrid-alerting
+  namespace: pulsegrid
+spec:
+  selector:
+    app.kubernetes.io/name: pulsegrid-alerting
+  ports:
+    - name: http
+      port: 8090
+      targetPort: http

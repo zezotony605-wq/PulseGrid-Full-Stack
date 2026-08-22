@@ -8,7 +8,9 @@ flowchart LR
   CONSUMER --> CH[(ClickHouse)]
   CONSUMER --> PG[(PostgreSQL 17)]
   CONSUMER -->|WebSocket| UI["Next.js dashboard"]
+  API --> ALERTS["Go alert evaluator"]
   API --> METRICS["Prometheus + Grafana"]
+  ALERTS --> METRICS
 ```
 
 ## Why the gateway sits before Kafka
@@ -16,6 +18,23 @@ flowchart LR
 Devices do not receive Kafka network access. They authenticate using a short-lived, scoped JWT and send bounded HTTP batches to the WebFlux edge. The gateway validates measurements and publishes accepted events to Kafka. This keeps broker credentials off wearable devices while Kafka absorbs traffic spikes and decouples ingestion from storage.
 
 The Kafka consumer stores high-volume measurements in ClickHouse, records ingestion-batch audit data in PostgreSQL, updates the live WebSocket stream, and exposes custom health gauges. Delivery is at-least-once: every event carries an `event_id`, and downstream queries should deduplicate on that key when strict uniqueness is required.
+
+## Read path
+
+The dashboard and the alert evaluator both read through the gateway rather than
+querying ClickHouse directly, so query bounds, the CORS policy and the choice of
+which columns leave the system are enforced in one place.
+
+`GET /api/v1/telemetry/recent`, `/telemetry/stats` and `/devices/summary` are
+unauthenticated in this deployment. They return no user identifier — the ingest
+model carries `user_id`, the read model does not — but they should still sit
+behind the platform gateway's authentication before the API is exposed publicly.
+
+Fleet liveness is derived from each device's own last event rather than from a
+status column, so a device that stops reporting ages from online to degraded to
+offline on its own. The buckets are computed from a single `last_seen` per
+device, which keeps a device that reported in two windows from being counted
+twice.
 
 ## Observability
 
