@@ -9,3 +9,7 @@ simulator/build/
 .env
 *.log
 load-tests/results/summary.json
+.sites-runtime/
+.claude/
+next-env.d.ts
+coverage/

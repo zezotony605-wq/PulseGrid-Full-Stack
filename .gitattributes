@@ -1,0 +1,7 @@
+# Normalise everything to LF in the repository. Docker builds and CI run on
+# Linux, where a CRLF shebang or entrypoint silently breaks at runtime.
+* text=auto eol=lf
+
+*.png binary
+*.jpg binary
+*.ico binary
