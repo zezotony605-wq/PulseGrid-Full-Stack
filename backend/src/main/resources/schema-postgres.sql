@@ -1,0 +1,22 @@
+CREATE TABLE IF NOT EXISTS users (
+  id UUID PRIMARY KEY,
+  email VARCHAR(255) UNIQUE NOT NULL,
+  display_name VARCHAR(120) NOT NULL,
+  role VARCHAR(32) NOT NULL DEFAULT 'VIEWER',
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE TABLE IF NOT EXISTS devices (
+  id VARCHAR(32) PRIMARY KEY,
+  owner_id UUID NOT NULL REFERENCES users(id),
+  label VARCHAR(100) NOT NULL,
+  status VARCHAR(24) NOT NULL DEFAULT 'OFFLINE',
+  last_seen_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE TABLE IF NOT EXISTS telemetry_ingestion_batches (
+  id BIGSERIAL PRIMARY KEY,
+  event_count INTEGER NOT NULL CHECK (event_count > 0),
+  first_event_at TIMESTAMPTZ NOT NULL,
+  last_event_at TIMESTAMPTZ NOT NULL,
+  persisted_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);

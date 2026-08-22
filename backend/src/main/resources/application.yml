@@ -1,0 +1,48 @@
+server:
+  port: ${SERVER_PORT:8080}
+spring:
+  application:
+    name: pulsegrid-backend
+  r2dbc:
+    url: ${POSTGRES_R2DBC_URL:r2dbc:postgresql://localhost:5432/pulsegrid}
+    username: ${POSTGRES_USER:pulsegrid}
+    password: ${POSTGRES_PASSWORD:pulsegrid}
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        enable.idempotence: true
+        acks: all
+        compression.type: lz4
+    consumer:
+      group-id: ${KAFKA_CONSUMER_GROUP:pulsegrid-storage-v1}
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: dev.pulsegrid.telemetry
+        spring.json.value.default.type: dev.pulsegrid.telemetry.TelemetryEvent
+        max.poll.records: 1000
+    listener:
+      type: batch
+      ack-mode: batch
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+management:
+  endpoints.web.exposure.include: health,info,metrics,prometheus
+  endpoint.health.show-details: always
+  metrics.tags.application: ${spring.application.name}
+pulsegrid:
+  kafka.topic: ${KAFKA_TELEMETRY_TOPIC:pulsegrid.telemetry.v1}
+  security:
+    jwt-secret: ${JWT_SECRET:change-this-development-secret-to-at-least-32-bytes}
+    device-secret: ${DEVICE_SHARED_SECRET:dev-only-change-me}
+    issuer: ${JWT_ISSUER:pulsegrid}
+  clickhouse:
+    url: ${CLICKHOUSE_URL:http://localhost:8123}
+    database: ${CLICKHOUSE_DATABASE:pulsegrid}
+    username: ${CLICKHOUSE_USER:default}
+    password: ${CLICKHOUSE_PASSWORD:}

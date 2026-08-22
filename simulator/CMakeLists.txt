@@ -1,0 +1,8 @@
+cmake_minimum_required(VERSION 3.20)
+project(pulsegrid_simulator LANGUAGES CXX)
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+find_package(Threads REQUIRED)
+add_executable(pulsegrid-sim src/main.cpp)
+target_compile_options(pulsegrid-sim PRIVATE -O3 -Wall -Wextra -Wpedantic)
+target_link_libraries(pulsegrid-sim PRIVATE Threads::Threads)

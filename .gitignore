@@ -1,0 +1,11 @@
+node_modules/
+.next/
+dist/
+.wrangler/
+.sites-runtime/
+backend/.gradle/
+backend/build/
+simulator/build/
+.env
+*.log
+load-tests/results/summary.json
